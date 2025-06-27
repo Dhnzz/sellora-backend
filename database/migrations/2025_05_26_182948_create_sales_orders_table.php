@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('sales_id')->constrained('sales')->onDelete('cascade');
             $table->date('order_date');
             $table->decimal('total_amount', 10, 2);
-            $table->string('status');
+            $table->enum('status', [0, 1, 2])->default(0); // 0 = Dipesan, 1 = Diantar, 2 = Diterima
             $table->text('notes')->nullable();
             $table->timestamps();
         });

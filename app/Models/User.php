@@ -3,16 +3,18 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, Hasroles;
 
     /**
      * The attributes that are mass assignable.
@@ -41,23 +43,18 @@ class User extends Authenticatable
         ];
     }
 
-    public function roles(): HasOne
-    {
-        return $this->hasOne(Role::class);
-    }
-
     public function customers(): HasOne
     {
-        return $this->hasOne(Customer::class);
+        return $this->hasOne(Customer::class, 'user_id');
     }
 
     public function admins(): HasOne
     {
-        return $this->hasOne(Admin::class);
+        return $this->hasOne(Admin::class, 'user_id');
     }
 
     public function sales(): HasOne
     {
-        return $this->hasOne(Sales::class);
+        return $this->hasOne(Sales::class, 'user_id');
     }
 }

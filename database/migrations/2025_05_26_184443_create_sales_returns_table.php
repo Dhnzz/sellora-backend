@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('return_date');
             $table->decimal('total_refund', 10, 2);
             $table->text('reason');
+            $table->enum('status', [0, 1, 2])->default(0); // 0 = Diajukan, 1 = Diterima, 2 = Ditolak
             $table->timestamps();
         });
     }

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Role, User, Customer};
+use App\Models\{User, Customer};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -14,14 +14,13 @@ class CustomerSeeder extends Seeder
      */
     public function run(): void
     {
-        $customer = Role::where('name', 'Customer')->first();
-        
         $user = User::create([
             'email' => 'customer@gmail.com',
             'password' => Hash::make('customer123'),
-            'role_id' => $customer->id,
             'is_active' => 0,
         ]);
+
+        $user->assignRole('customer');
 
         Customer::create([
             'name' => 'Customer',

@@ -28,11 +28,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // CRUD
     // Admin CRUD
     Route::prefix('admin')->group(function () {
-        Route::get('admin', [AdminController::class, 'index'])->middleware('permission:view-admin')->name('admin.index');
-        // Route::get('admin/{admin}', [ProductGroupController::class, 'show'])->name('product_groups.show');
-        Route::post('admin', [AdminController::class, 'store'])->name('admin.store');
-        // Route::put('product_groups/{productGroup}', [ProductGroupController::class, 'update'])->name('product_groups.update');
-        // Route::delete('product_groups/{productGroup}', [ProductGroupController::class, 'destroy'])->name('product_groups.destroy');
+        Route::get('get_admin', [AdminController::class, 'index'])->middleware('permission:view-admin')->name('admin.index');
+        Route::get('show_admin/{id}', [AdminController::class, 'show'])->name('admin.show');
+        Route::post('create_admin', [AdminController::class, 'store'])->name('admin.store');
+        Route::put('update_admin/{id}', [AdminController::class, 'update'])->name('admin.update');
+        Route::delete('destroy_admin/{id}', [AdminController::class, 'destroy'])->name('admin.destroy');
     });
 
     Route::prefix('product_group')->group(function () {

@@ -41,9 +41,29 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
+        switch ($request->user()->getRoleNames()->first()) {
+            case 'superAdmin':
+                $profil = $request->user()->admins;
+                break;
+            case 'admin':
+                $profil = $request->user()->admins;
+                break;
+            case 'sales':
+                $profil = $request->user()->sales;
+                break;
+            case 'customer':
+                $profil = $request->user()->customers;
+                break;
+
+            default:
+                $profil = 'Tidak Memiliki profil';
+                break;
+        }
+
         $data = [
             'email' => $request->user()->email,
-            'role' => $request->user()->getRoleNames(),
+            'profil' => $profil,
+            'role' => $request->user()->roles,
             'is_active' => $request->user()->is_active,
         ];
         return $data;

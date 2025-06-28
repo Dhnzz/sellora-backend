@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
 use App\Models\Admin;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\AdminResource;
 use App\Http\Requests\Admin\StoreRequest;
+use App\Http\Requests\Admin\UpdateRequest;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AdminController extends Controller
 {
@@ -25,7 +29,7 @@ class AdminController extends Controller
      */
     public function store(StoreRequest $request)
     {
-        $validatedAdmin = $request->validated()
+        $validatedAdmin = $request->validated();
 
         $adminStore = DB::transaction(function () use ($validatedAdmin) {
             $user = User::create([
@@ -36,10 +40,11 @@ class AdminController extends Controller
 
             $admin = Admin::create([
                 'name' => $validatedAdmin['name'],
-                'phone' => $validatedAdmin['phone']
+                'phone' => $validatedAdmin['phone'],
+                'user_id' => $user->id,
             ]);
 
-            return $admin;
+            return $admin->load('users');
         });
         return new AdminResource($adminStore);
     }
@@ -47,26 +52,94 @@ class AdminController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Admin $admin)
+    public function show($id)
     {
-        //
+        $admin = Admin::find($id);
+        if (!$admin) {
+            return response()->json(
+                [
+                    'code' => 404,
+                    'status' => false,
+                    'message' => 'Resource not found. Data Admin dengan ID ini tidak ditemukan.',
+                ],
+                404,
+            );
+        }
+
+        // Jika ditemukan, kembalikan resource seperti biasa
+        return new AdminResource($admin->load('users'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Admin $admin)
+    public function update(UpdateRequest $request, $id)
     {
-        //
+        $admin = Admin::find($id);
+        if (!$admin) {
+            return response()->json(
+                [
+                    'code' => 404,
+                    'status' => false,
+                    'message' => 'Resource not found. Data Admin dengan ID ini tidak ditemukan.',
+                ],
+                404,
+            );
+        }
+
+        $validatedData = $request->validated();
+        DB::transaction(function () use ($validatedData, $admin) {
+            $admin->update([
+                'name' => $validatedData['name'],
+                'phone' => $validatedData['phone'],
+            ]);
+
+            $admin->users->update([
+                'email' => $validatedData['email'],
+            ]);
+
+            if (!empty($validatedData['password'])) {
+                $admin->users->update([
+                    'password' => Hash::make($validatedData['password']),
+                ]);
+            }
+        });
+
+        return new AdminResource($admin->fresh()->load('users'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Admin $admin)
+    public function destroy($id)
     {
-        DB::transaction(function () use ($admin){
-            $user = $admin->user;
+        $admin = Admin::find($id);
+        if (!$admin) {
+            return response()->json(
+                [
+                    'code' => 404,
+                    'status' => false,
+                    'message' => 'Resource not found. Data Admin dengan ID ini tidak ditemukan.',
+                ],
+                404,
+            );
+        }
+
+        DB::transaction(function () use ($admin) {
+            $user = $admin->users;
+
+            $admin->delete();
+
+            if ($user) {
+                $user->delete();
+            }
         });
+
+        return response()->json(
+            [
+                'message' => 'Admin berhasil dihapus',
+            ],
+            200,
+        );
     }
 }
